@@ -77,15 +77,7 @@ function Calculator() {
         <button onClick={() => setInput("")}>C</button>
       </div>
 
-{/* 
-      <h3>History</h3>
-      <ul>
-        {history.map(item => (
-          <li key={item._id}>
-            {item.expression} = {item.result}
-          </li>
-        ))}
-      </ul> */}
+
     </div>
   );
 }
