@@ -1,13 +1,14 @@
 // src/Calculator.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { evaluate } from "mathjs";
 
 function Calculator() {
   const [input, setInput] = useState("");
-  const [history, setHistory] = useState([]);
 
   // Render-hosted backend API
-  const BACKEND_URL = "https://calculator-backend-jwnp.onrender.com/api/calculations";
+  const BACKEND_URL =
+    "https://calculator-backend-jwnp.onrender.com/api/calculations";
 
   // Change browser tab title
   useEffect(() => {
@@ -16,68 +17,70 @@ function Calculator() {
 
   const handleClick = (value) => {
     if (!"0123456789+-*/.".includes(value)) return;
-    setInput(prev => prev + value);
+    setInput((prev) => prev + value);
   };
 
   const calculate = async () => {
     try {
-      if (!input) throw new Error("Empty input");
+      if (!input.trim()) {
+        alert("Please enter an expression");
+        return;
+      }
 
       // Sanitize input
       const sanitizedInput = input.replace(/[^0-9+\-*/.]/g, "");
 
-      // Evaluate expression
-      const result = eval(sanitizedInput);
+      if (!sanitizedInput) {
+        alert("Invalid Expression");
+        return;
+      }
 
-      // Save to backend (do not block calculation on failure)
+      // Safe calculation instead of eval()
+      const result = evaluate(sanitizedInput);
+
+      // Save to backend
       try {
         await axios.post(
           BACKEND_URL,
-          { expression: sanitizedInput, result },
-          { timeout: 15000 } // wait up to 15s
+          {
+            expression: sanitizedInput,
+            result: result,
+          },
+          {
+            timeout: 15000,
+          }
         );
       } catch (err) {
         console.error("Backend error:", err);
       }
 
       setInput(result.toString());
-      // fetchHistory(); // uncomment if you want history auto-refresh
-
-    } catch {
+    } catch (error) {
+      console.error("Calculation error:", error);
       alert("Invalid Expression");
     }
   };
 
-  const fetchHistory = async () => {
-    try {
-      const res = await axios.get(BACKEND_URL);
-      setHistory(res.data);
-    } catch (err) {
-      console.error("Error fetching history:", err);
-    }
+  const clearInput = () => {
+    setInput("");
   };
-
-  // useEffect(() => {
-  //   fetchHistory();
-  // }, []);
 
   return (
     <div className="calculator">
       <h2>Full Stack Calculator</h2>
 
-      <input value={input} readOnly />
+      <input type="text" value={input} readOnly />
 
       <div className="buttons">
-        {"1234567890+-*/".split("").map(btn => (
+        {"1234567890+-*/.".split("").map((btn) => (
           <button key={btn} onClick={() => handleClick(btn)}>
             {btn}
           </button>
         ))}
+
         <button onClick={calculate}>=</button>
-        <button onClick={() => setInput("")}>C</button>
+        <button onClick={clearInput}>C</button>
       </div>
-
-
     </div>
   );
 }
