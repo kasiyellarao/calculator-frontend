@@ -8,7 +8,7 @@ function Calculator() {
 
   // Render-hosted backend API
   const BACKEND_URL =
-    "https://calculator-backend-jwnp.onrender.com/api/calculations";
+    "https://calculator-backend-jwnp.onrender.com/";
 
   // Change browser tab title
   useEffect(() => {
